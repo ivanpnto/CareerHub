@@ -1,2 +1,5 @@
 # CareerHub
-**CareerHub** is a project aimed at developing a platform that helps students find job opportunities and internships, while also supporting the management of other career-related activities.
+
+CareerHub is a full-stack web application designed to help students and software developers manage their professional career in one place.
+
+🚧 Project currently under active development.
