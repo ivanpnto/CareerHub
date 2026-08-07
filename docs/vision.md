@@ -8,7 +8,6 @@ CareerHub aims to become a centralized platform where students and early-career 
 Instead of relying on scattered spreadsheets, notes, emails, bookmarks, and job boards, users can organize companies, job opportunities, applications, interviews, tasks, and career-related information in a structured and efficient way.
 
 CareerHub is designed with long-term growth in mind. The initial version focuses on providing a reliable and intuitive foundation for job search management, while future versions will progressively incorporate advanced productivity features, analytics, and AI-powered assistance that deliver real value without replacing user decision-making.
----
 
 ## Purpose
 
@@ -17,7 +16,6 @@ Searching for a job involves much more than submitting applications.
 Students and early-career professionals often need to keep track of companies, job opportunities, application statuses, interviews, deadlines, notes, and personal tasks. This information is frequently scattered across spreadsheets, calendars, emails, notes, and multiple job platforms, making the process difficult to organize and maintain.
 
 CareerHub exists to centralize the entire job search process into a single platform, providing users with a structured, organized, and reliable workspace where they can manage every step of their professional journey with confidence.
----
 
 ## Target Users
 
@@ -38,7 +36,6 @@ Although not the primary focus of the MVP, CareerHub can also be useful for:
 - Career changers entering the software industry.
 - Self-taught developers preparing for their first professional role.
 - Professionals who prefer a structured approach to managing their job search.
----
 
 ## Goals
 
@@ -49,7 +46,6 @@ The primary goals of CareerHub are:
 - Reduce the risk of losing important information, deadlines, or interview schedules.
 - Offer an intuitive and consistent user experience that requires minimal learning.
 - Establish a solid and extensible foundation for future features without compromising simplicity in the MVP.
----
 
 ## Non-Goals
 
@@ -65,7 +61,6 @@ The first version of CareerHub is intentionally focused on delivering a solid an
 - Advanced analytics and reporting.
 - Mobile applications.
 - Multi-user organizations or team management.
----
 
 ## Success Metrics
 
@@ -76,7 +71,6 @@ The MVP of CareerHub will be considered successful if users can:
 - Organize companies, interviews, and tasks without relying on external tools.
 - Quickly identify upcoming interviews and pending tasks.
 - Navigate the application with a simple and intuitive user experience.
----
 
 ## Guiding Principles
 
