@@ -203,3 +203,337 @@ A Company is responsible for:
 A Company represents an organization independently of any specific recruitment process.
 
 It acts as reusable contextual information that can be shared across multiple job offers and applications.
+
+## 4.3 JobOffer
+
+### Description
+
+Represents a specific employment opportunity published by a company.
+
+A JobOffer contains information describing the position, working conditions, and other relevant details provided by the employer.
+
+JobOffer is independent from the user's application process. A single offer may be associated with multiple applications belonging to different users, while a JobApplication may exist without an associated JobOffer.
+
+---
+
+### Responsibilities
+
+A JobOffer is responsible for:
+
+- Representing a specific employment opportunity.
+- Storing information describing the offered position.
+- Providing context for applications associated with the offer.
+- Preserving the details of an employment opportunity independently of individual applications.
+
+---
+
+### Attributes
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | UUID | Yes | Unique identifier inherited from BaseEntity. |
+| createdAt | Instant | Yes | Creation timestamp inherited from BaseEntity. |
+| updatedAt | Instant | Yes | Last modification timestamp inherited from BaseEntity. |
+| title | String | Yes | Title of the offered position. |
+| description | String (TEXT) | No | Original description of the job offer. |
+| location | String | No | Location associated with the position. |
+| workMode | WorkMode | No | Working arrangement, such as remote, hybrid, or on-site. |
+| employmentType | EmploymentType | No | Type of employment, such as full-time, part-time, or internship. |
+| sourceUrl | String | No | URL of the original job offer. |
+| publishedAt | LocalDate | No | Date on which the offer was published. |
+| expiresAt | LocalDate | No | Date on which the offer expires, if known. |
+
+---
+
+### Relationships
+
+| Entity | Cardinality | Required | Description |
+|--------|-------------|----------|-------------|
+| Company | Many-to-One | Yes | Company that published the offer. |
+| JobApplication | One-to-Many | No | Applications associated with this offer. |
+
+---
+
+### Business Rules
+
+- Every JobOffer belongs to exactly one Company.
+- A JobOffer may exist without any JobApplication.
+- A JobApplication may reference a JobOffer only if the JobOffer belongs to the same Company as the JobApplication.
+- The title of a JobOffer is required.
+- An expiration date cannot be earlier than the publication date when both are provided.
+- Deleting a JobOffer must not automatically delete associated JobApplications.
+- The original JobOffer data should remain independent from changes made to individual JobApplications.
+
+---
+
+### Validation
+
+| Attribute | Rule |
+|-----------|------|
+| title | Required. Maximum length to be defined during implementation. |
+| description | Optional. |
+| location | Optional. |
+| workMode | Optional. |
+| employmentType | Optional. |
+| sourceUrl | Must be a valid URL if provided. |
+| publishedAt | Optional. |
+| expiresAt | Optional. Must not precede publishedAt when both are provided. |
+
+---
+
+### Notes
+
+JobOffer represents the employment opportunity itself rather than a user's interaction with it.
+
+Salary information is intentionally excluded from the MVP to keep the initial data model simple. It may be introduced in a future version if it provides sufficient value.
+
+The original job description is retained as free-form text to preserve useful information for future features such as analytics and AI-assisted job analysis.
+
+## 4.4 Interview
+
+### Description
+
+Represents an interview or interview-related event associated with a JobApplication.
+
+An Interview records the scheduling and relevant details of a recruitment interview, including when it takes place, how it is conducted, and its current status.
+
+An Interview always belongs to a JobApplication and therefore indirectly belongs to the User and Company associated with that application.
+
+---
+
+### Responsibilities
+
+An Interview is responsible for:
+
+- Representing an interview associated with a JobApplication.
+- Storing the scheduled date and time.
+- Identifying the interview format.
+- Tracking the interview's current status.
+- Storing relevant information needed by the user before or after the interview.
+
+---
+
+### Attributes
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | UUID | Yes | Unique identifier inherited from BaseEntity. |
+| createdAt | Instant | Yes | Creation timestamp inherited from BaseEntity. |
+| updatedAt | Instant | Yes | Last modification timestamp inherited from BaseEntity. |
+| scheduledAt | Instant | Yes | Date and time at which the interview is scheduled. |
+| type | InterviewType | Yes | Format or type of interview. |
+| status | InterviewStatus | Yes | Current status of the interview. |
+| location | String | No | Physical location or meeting information. |
+| interviewer | String | No | Name or description of the interviewer. |
+| notes | String (TEXT) | No | User-defined notes about the interview. |
+
+---
+
+### Relationships
+
+| Entity | Cardinality | Required | Description |
+|--------|-------------|----------|-------------|
+| JobApplication | Many-to-One | Yes | Application associated with the interview. |
+
+---
+
+### Business Rules
+
+- Every Interview belongs to exactly one JobApplication.
+- An Interview cannot exist without a JobApplication.
+- An Interview must have a scheduled date and time.
+- An Interview must have a status.
+- An Interview with status `CANCELLED` must not be considered an upcoming interview.
+- An Interview with status `COMPLETED` must not be considered an upcoming interview.
+- Deleting a JobApplication must not automatically delete its Interviews.
+- An Interview cannot be reassigned to a different JobApplication after creation.
+
+---
+
+### Validation
+
+| Attribute | Rule |
+|-----------|------|
+| scheduledAt | Required. |
+| type | Required. |
+| status | Required. |
+| location | Optional. |
+| interviewer | Optional. |
+| notes | Optional. |
+
+---
+
+### Notes
+
+Interview is modeled as a separate entity rather than as attributes of JobApplication because a single application may involve multiple interviews.
+
+The MVP focuses on interview tracking and scheduling. Calendar integrations, reminders, notifications, and advanced interview feedback may be introduced in future versions.
+
+The `location` attribute is intentionally modeled as a free-form string in the MVP. It may contain either a physical location or meeting information.
+
+The `interviewer` attribute is also modeled as a free-form string because CareerHub does not currently manage external people as independent domain entities.
+
+## 4.5 Task
+
+### Description
+
+Represents an actionable item that the user needs to complete as part of their professional career management.
+
+A Task may be associated with a specific JobApplication when it relates to a recruitment process, or it may exist independently as a general career-related task.
+
+---
+
+### Responsibilities
+
+A Task is responsible for:
+
+- Representing an actionable item.
+- Tracking whether the task has been completed.
+- Storing a deadline when one exists.
+- Allowing tasks to be prioritized.
+- Optionally associating a task with a specific JobApplication.
+
+---
+
+### Attributes
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | UUID | Yes | Unique identifier inherited from BaseEntity. |
+| createdAt | Instant | Yes | Creation timestamp inherited from BaseEntity. |
+| updatedAt | Instant | Yes | Last modification timestamp inherited from BaseEntity. |
+| title | String | Yes | Short description of the task. |
+| description | String (TEXT) | No | Additional information about the task. |
+| dueAt | Instant | No | Date and time by which the task should be completed. |
+| status | TaskStatus | Yes | Current state of the task. |
+| priority | TaskPriority | Yes | User-defined priority. |
+
+---
+
+### Relationships
+
+| Entity | Cardinality | Required | Description |
+|--------|-------------|----------|-------------|
+| User | Many-to-One | Yes | Owner of the task. |
+| JobApplication | Many-to-One | No | Application associated with the task, if applicable. |
+
+---
+
+### Business Rules
+
+- Every Task belongs to exactly one User.
+- A Task may optionally belong to one JobApplication.
+- If a Task is associated with a JobApplication, both must belong to the same User.
+- A Task must have a status.
+- A Task must have a priority.
+- A completed Task must not be considered pending.
+- A cancelled Task must not be considered pending.
+- Deleting a JobApplication must not automatically delete associated Tasks.
+- A Task may exist independently of any JobApplication.
+
+---
+
+### Validation
+
+| Attribute | Rule |
+|-----------|------|
+| title | Required. Maximum length to be defined during implementation. |
+| description | Optional. |
+| dueAt | Optional. |
+| status | Required. |
+| priority | Required. |
+| user | Required. |
+| jobApplication | Optional. |
+
+---
+
+### Notes
+
+Task is intentionally designed as an independent entity that may optionally reference a JobApplication.
+
+This allows CareerHub to manage both recruitment-specific tasks and general professional tasks without introducing additional task types or polymorphic relationships.
+
+Calendar integration, reminders, recurring tasks, and advanced task management are considered future extensions.
+
+## 4.6 User
+
+### Description
+
+Represents a registered CareerHub user and the owner of the professional data managed within the platform.
+
+A User is the root entity for user-owned career information. Companies, JobApplications, and Tasks are associated with a specific User and must not expose or modify another user's data.
+
+User also contains the credentials required to authenticate with CareerHub.
+
+---
+
+### Responsibilities
+
+A User is responsible for:
+
+- Representing a registered CareerHub account.
+- Identifying the owner of career-related data.
+- Providing the identity used for authorization.
+- Storing the credentials required for authentication.
+- Serving as the ownership boundary for user-specific data.
+
+---
+
+### Attributes
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | UUID | Yes | Unique identifier inherited from BaseEntity. |
+| createdAt | Instant | Yes | Creation timestamp inherited from BaseEntity. |
+| updatedAt | Instant | Yes | Last modification timestamp inherited from BaseEntity. |
+| email | String | Yes | Unique email address used to identify the account. |
+| passwordHash | String | Yes | Securely hashed user password. |
+| firstName | String | Yes | User's first name. |
+| lastName | String | Yes | User's last name. |
+
+---
+
+### Relationships
+
+| Entity | Cardinality | Required | Description |
+|--------|-------------|----------|-------------|
+| Company | One-to-Many | No | Companies managed by the user. |
+| JobApplication | One-to-Many | No | Job applications created by the user. |
+| Task | One-to-Many | No | Tasks owned by the user. |
+
+---
+
+### Business Rules
+
+- Every User must have a unique email address.
+- A User's password must never be stored in plain text.
+- The password must be stored as a secure one-way hash.
+- Every Company belongs to exactly one User.
+- Every JobApplication belongs to exactly one User.
+- Every Task belongs to exactly one User.
+- A User must only be able to access their own career-related data.
+- Deleting a User must not be implemented using unrestricted cascading deletion.
+- A User cannot be deleted while dependent career data still exists.
+
+---
+
+### Validation
+
+| Attribute | Rule |
+|-----------|------|
+| email | Required. Must be a valid email address and unique within CareerHub. |
+| passwordHash | Required. Must contain a securely hashed password. |
+| firstName | Required. Maximum length to be defined during implementation. |
+| lastName | Required. Maximum length to be defined during implementation. |
+
+---
+
+### Notes
+
+The User entity represents both the account identity and the ownership boundary of CareerHub data.
+
+Authentication and authorization logic are implemented by the security layer rather than directly by the entity.
+
+Passwords are never stored directly. The application must hash passwords using a secure password-hashing mechanism before persistence.
+
+Future versions may introduce additional profile information, preferences, roles, or account-management features without changing the fundamental ownership model.
