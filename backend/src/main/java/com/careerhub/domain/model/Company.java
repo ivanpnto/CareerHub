@@ -29,6 +29,25 @@ public class Company extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    protected Company() {
+    }
+
+    public Company(
+            String name,
+            String website,
+            String industry,
+            String headquarters,
+            String notes,
+            User user
+    ) {
+        this.name = name;
+        this.website = website;
+        this.industry = industry;
+        this.headquarters = headquarters;
+        this.notes = notes;
+        this.user = user;
+    }
+
     public String getName() {
         return name;
     }

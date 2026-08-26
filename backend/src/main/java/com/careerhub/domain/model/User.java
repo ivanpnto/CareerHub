@@ -20,6 +20,21 @@ public class User extends BaseEntity {
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
+    protected User() {
+    }
+
+    public User(
+            String email,
+            String passwordHash,
+            String firstName,
+            String lastName
+    ) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
     public String getEmail() {
         return email;
     }
