@@ -7,7 +7,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "task")

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,11 +49,11 @@ class JobApplicationPersistenceTest {
         Company persistedCompany =
                 entityManager.find(Company.class, company.getId());
 
-        OffsetDateTime publishedAt =
-                OffsetDateTime.parse("2026-08-01T10:00:00+02:00");
+        LocalDate publishedAt =
+                LocalDate.parse("2026-08-01");
 
-        OffsetDateTime expiresAt =
-                OffsetDateTime.parse("2026-09-01T10:00:00+02:00");
+        LocalDate expiresAt =
+                LocalDate.parse("2026-09-01");
 
         JobOffer jobOffer = new JobOffer(
                 "Software Engineer",
@@ -74,8 +74,8 @@ class JobApplicationPersistenceTest {
         JobOffer persistedJobOffer =
                 entityManager.find(JobOffer.class, jobOffer.getId());
 
-        OffsetDateTime appliedAt =
-                OffsetDateTime.parse("2026-08-15T09:30:00+02:00");
+        LocalDate appliedAt =
+                LocalDate.parse("2026-08-15");
 
         JobApplication application = new JobApplication(
                 "Software Engineer",

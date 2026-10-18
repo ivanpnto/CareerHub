@@ -6,7 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "job_offer")
@@ -31,10 +31,10 @@ public class JobOffer extends BaseEntity {
     private String sourceUrl;
 
     @Column(name = "published_at")
-    private OffsetDateTime publishedAt;
+    private LocalDate publishedAt;
 
     @Column(name = "expires_at")
-    private OffsetDateTime expiresAt;
+    private LocalDate expiresAt;
 
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
@@ -50,8 +50,8 @@ public class JobOffer extends BaseEntity {
             String workMode,
             String employmentType,
             String sourceUrl,
-            OffsetDateTime publishedAt,
-            OffsetDateTime expiresAt,
+            LocalDate publishedAt,
+            LocalDate expiresAt,
             Company company
     ) {
         this.title = title;
@@ -89,11 +89,11 @@ public class JobOffer extends BaseEntity {
         return sourceUrl;
     }
 
-    public OffsetDateTime getPublishedAt() {
+    public LocalDate getPublishedAt() {
         return publishedAt;
     }
 
-    public OffsetDateTime getExpiresAt() {
+    public LocalDate getExpiresAt() {
         return expiresAt;
     }
 

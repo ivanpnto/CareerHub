@@ -6,7 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "job_application")
@@ -19,7 +19,7 @@ public class JobApplication extends BaseEntity {
     private String status;
 
     @Column(name = "applied_at")
-    private OffsetDateTime appliedAt;
+    private LocalDate appliedAt;
 
     @Column(nullable = false, length = 50)
     private String priority;
@@ -45,7 +45,7 @@ public class JobApplication extends BaseEntity {
     public JobApplication(
             String positionTitle,
             String status,
-            OffsetDateTime appliedAt,
+            LocalDate appliedAt,
             String priority,
             String notes,
             User user,
@@ -70,7 +70,7 @@ public class JobApplication extends BaseEntity {
         return status;
     }
 
-    public OffsetDateTime getAppliedAt() {
+    public LocalDate getAppliedAt() {
         return appliedAt;
     }
 

@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,7 +53,7 @@ class TaskPersistenceTest {
         JobApplication application = new JobApplication(
                 "Backend Developer",
                 "APPLIED",
-                OffsetDateTime.parse("2026-08-15T09:30:00+02:00"),
+                LocalDate.parse("2026-08-15"),
                 "HIGH",
                 null,
                 persistedUser,
