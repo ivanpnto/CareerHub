@@ -1,10 +1,15 @@
-package com.careerhub.domain.model;
+package com.careerhub.interview;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.careerhub.company.Company;
+import com.careerhub.jobapplication.JobApplication;
+import com.careerhub.joboffer.JobOffer;
+import com.careerhub.user.User;
 
 import java.time.Instant;
 import java.time.LocalDate;

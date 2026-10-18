@@ -1,4 +1,4 @@
-package com.careerhub.domain.model;
+package com.careerhub.task;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,6 +7,10 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+
+import com.careerhub.jobapplication.JobApplication;
+import com.careerhub.shared.persistence.BaseEntity;
+import com.careerhub.user.User;
 
 @Entity
 @Table(name = "task")

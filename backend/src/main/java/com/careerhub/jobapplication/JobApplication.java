@@ -1,4 +1,4 @@
-package com.careerhub.domain.model;
+package com.careerhub.jobapplication;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,6 +7,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDate;
+
+import com.careerhub.company.Company;
+import com.careerhub.joboffer.JobOffer;
+import com.careerhub.shared.persistence.BaseEntity;
+import com.careerhub.user.User;
 
 @Entity
 @Table(name = "job_application")

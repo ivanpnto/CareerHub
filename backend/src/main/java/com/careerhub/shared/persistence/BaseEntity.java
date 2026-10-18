@@ -1,4 +1,4 @@
-package com.careerhub.domain.model;
+package com.careerhub.shared.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;

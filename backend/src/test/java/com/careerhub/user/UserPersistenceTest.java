@@ -1,4 +1,4 @@
-package com.careerhub.domain.model;
+package com.careerhub.user;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

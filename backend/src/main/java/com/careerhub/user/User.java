@@ -1,4 +1,6 @@
-package com.careerhub.domain.model;
+package com.careerhub.user;
+
+import com.careerhub.shared.persistence.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
