@@ -8,8 +8,9 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.UUID;
+import java.time.temporal.ChronoUnit;
 
 @MappedSuperclass
 public abstract class BaseEntity {
@@ -19,32 +20,32 @@ public abstract class BaseEntity {
     private UUID id;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private OffsetDateTime updatedAt;
+    private Instant updatedAt;
 
     @PrePersist
     private void onCreate() {
-        OffsetDateTime now = OffsetDateTime.now();
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     private void onUpdate() {
-        updatedAt = OffsetDateTime.now();
+        updatedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
     public UUID getId() {
         return id;
     }
 
-    public OffsetDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public OffsetDateTime getUpdatedAt() {
+    public Instant getUpdatedAt() {
         return updatedAt;
     }
 }

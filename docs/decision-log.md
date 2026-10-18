@@ -454,6 +454,26 @@ Indexes are introduced through a Flyway migration.
 
 ---
 
+## 5.7 Instant for Points in Time
+
+**Decision**
+
+Audit timestamps and event instants (`createdAt`, `updatedAt`, `scheduledAt`, `dueAt`) are mapped to `Instant`.
+
+**Context**
+
+These fields were mapped to `OffsetDateTime`, while the data model specified `Instant`.
+
+**Rationale**
+
+`TIMESTAMP WITH TIME ZONE` stores an absolute instant and does not preserve the original offset. `Instant` represents exactly what is stored, and its equality does not depend on the JVM time zone. Values are truncated to microseconds to match PostgreSQL precision.
+
+**Consequences**
+
+Time-zone conversion for display is the responsibility of the presentation layer.
+
+---
+
 # 6. API Decisions
 
 ## 6.1 API Versioning

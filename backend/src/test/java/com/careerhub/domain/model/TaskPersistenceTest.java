@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,8 +71,8 @@ class TaskPersistenceTest {
                         application.getId()
                 );
 
-        OffsetDateTime dueAt =
-                OffsetDateTime.parse("2026-08-28T17:00:00+02:00");
+        Instant dueAt =
+                Instant.parse("2026-08-28T15:00:00Z");
 
         Task task = new Task(
                 "Prepare technical interview",

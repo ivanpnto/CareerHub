@@ -6,14 +6,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "interview")
 public class Interview extends BaseEntity {
 
     @Column(name = "scheduled_at", nullable = false)
-    private OffsetDateTime scheduledAt;
+    private Instant scheduledAt;
 
     @Column(nullable = false, length = 50)
     private String type;
@@ -38,7 +38,7 @@ public class Interview extends BaseEntity {
     }
 
     public Interview(
-            OffsetDateTime scheduledAt,
+            Instant scheduledAt,
             String type,
             String status,
             String location,
@@ -55,7 +55,7 @@ public class Interview extends BaseEntity {
         this.jobApplication = jobApplication;
     }
 
-    public OffsetDateTime getScheduledAt() {
+    public Instant getScheduledAt() {
         return scheduledAt;
     }
 

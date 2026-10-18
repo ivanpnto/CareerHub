@@ -6,6 +6,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -19,7 +20,7 @@ public class Task extends BaseEntity {
     private String description;
 
     @Column(name = "due_at")
-    private OffsetDateTime dueAt;
+    private Instant dueAt;
 
     @Column(nullable = false, length = 50)
     private String status;
@@ -41,7 +42,7 @@ public class Task extends BaseEntity {
     public Task(
             String title,
             String description,
-            OffsetDateTime dueAt,
+            Instant dueAt,
             String status,
             String priority,
             User user,
@@ -64,7 +65,7 @@ public class Task extends BaseEntity {
         return description;
     }
 
-    public OffsetDateTime getDueAt() {
+    public Instant getDueAt() {
         return dueAt;
     }
 

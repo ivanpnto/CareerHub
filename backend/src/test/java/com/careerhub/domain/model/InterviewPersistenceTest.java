@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,8 +90,8 @@ class InterviewPersistenceTest {
                         application.getId()
                 );
 
-        OffsetDateTime scheduledAt =
-                OffsetDateTime.parse("2026-08-20T11:00:00+02:00");
+        Instant scheduledAt =
+                Instant.parse("2026-08-20T09:00:00Z");
 
         Interview interview = new Interview(
                 scheduledAt,
