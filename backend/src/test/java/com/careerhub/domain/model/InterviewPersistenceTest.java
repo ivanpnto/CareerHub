@@ -94,9 +94,9 @@ class InterviewPersistenceTest {
 
         Interview interview = new Interview(
                 scheduledAt,
-                "TECHNICAL",
+                "VIDEO",
                 "SCHEDULED",
-                "Madrid office",
+                "Google Meet",
                 "Jane Smith",
                 "Technical interview with the backend team.",
                 persistedApplication
@@ -119,13 +119,13 @@ class InterviewPersistenceTest {
                 .isEqualTo(scheduledAt);
 
         assertThat(persistedInterview.getType())
-                .isEqualTo("TECHNICAL");
+                .isEqualTo("VIDEO");
 
         assertThat(persistedInterview.getStatus())
                 .isEqualTo("SCHEDULED");
 
         assertThat(persistedInterview.getLocation())
-                .isEqualTo("Madrid office");
+                .isEqualTo("Google Meet");
 
         assertThat(persistedInterview.getInterviewer())
                 .isEqualTo("Jane Smith");

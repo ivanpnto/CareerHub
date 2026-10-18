@@ -77,7 +77,7 @@ class TaskPersistenceTest {
                 "Prepare technical interview",
                 "Review Spring Boot and JPA concepts.",
                 dueAt,
-                "PENDING",
+                "TODO",
                 "HIGH",
                 persistedUser,
                 persistedApplication
@@ -106,7 +106,7 @@ class TaskPersistenceTest {
                 .isEqualTo(dueAt);
 
         assertThat(persistedTask.getStatus())
-                .isEqualTo("PENDING");
+                .isEqualTo("TODO");
 
         assertThat(persistedTask.getPriority())
                 .isEqualTo("HIGH");
@@ -144,7 +144,7 @@ class TaskPersistenceTest {
                 "Update CV",
                 "Review and update the current CV.",
                 null,
-                "PENDING",
+                "TODO",
                 "MEDIUM",
                 persistedUser,
                 null
