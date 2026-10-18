@@ -33,6 +33,7 @@ To maintain consistency throughout the project, the following naming conventions
 
 - Table names use singular nouns.
 - Names are written in snake_case.
+- user is quoted in SQL because it is a reserved word in PostgreSQL.
 
 Examples:
 
@@ -51,7 +52,7 @@ Examples:
 Examples:
 
 - company_id
-- application_id
+- job_application_id
 - created_at
 - updated_at
 
@@ -121,7 +122,6 @@ Unique constraints are applied only when required by the domain model.
 Examples include:
 
 - User email addresses.
-- User usernames.
 
 ### Referential Integrity
 
@@ -163,7 +163,7 @@ This strategy improves traceability while keeping the initial implementation sim
 
 Indexes are introduced to improve query performance while avoiding unnecessary overhead during write operations.
 
-Primary keys and foreign keys are indexed by default.
+PostgreSQL automatically indexes primary keys and unique constraints, but not foreign key columns. Every foreign key column is therefore indexed explicitly through a migration, since these columns support ownership queries and the restrictive deletion policy.
 
 Additional indexes are created only when justified by actual query patterns or performance requirements.
 

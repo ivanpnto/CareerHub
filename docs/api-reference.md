@@ -85,3 +85,6 @@ Creates a new CareerHub user account.
   "firstName": "Ivan",
   "lastName": "Pinto"
 }
+```
+
+The remaining endpoints will be documented during the API implementation phase.

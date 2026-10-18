@@ -80,8 +80,8 @@ A JobApplication is responsible for:
 | updatedAt | Instant | Yes | Last modification timestamp inherited from BaseEntity. |
 | positionTitle | String | Yes | Snapshot of the position title at the time of application. |
 | status | ApplicationStatus | Yes | Current stage of the recruitment process. |
-| appliedAt | LocalDate | Yes | Date when the application was submitted. |
-| priority | ApplicationPriority | No | User-defined priority for the application. |
+| appliedAt | LocalDate | No | Date when the application was submitted. Null only while the status is `SAVED`. |
+| priority | ApplicationPriority | Yes | User-defined priority. Defaults to `MEDIUM` when not provided. |
 | notes | String (TEXT) | No | Free-form notes related to the application. |
 
 ---
@@ -108,6 +108,8 @@ A JobApplication is responsible for:
 - The status represents the current stage of the recruitment process.
 - Interviews cannot exist without an associated JobApplication.
 - Tasks related to the recruitment process should reference a JobApplication.
+- `appliedAt` is required for every status except `SAVED`.
+- If no priority is provided, the application layer assigns `MEDIUM`.
 
 ---
 
@@ -116,8 +118,9 @@ A JobApplication is responsible for:
 | Attribute | Rule |
 |-----------|------|
 | positionTitle | Required. Maximum length to be defined during implementation. |
-| appliedAt | Cannot be null. |
-| status | Cannot be null. |
+| appliedAt | Required unless status is `SAVED`. |
+| status | Required. Must be a valid `ApplicationStatus` value. |
+| priority | Required. Defaults to `MEDIUM`. |
 | company | Cannot be null. |
 | user | Cannot be null. |
 
@@ -261,7 +264,7 @@ A JobOffer is responsible for:
 - A JobApplication may reference a JobOffer only if the JobOffer belongs to the same Company as the JobApplication.
 - The title of a JobOffer is required.
 - An expiration date cannot be earlier than the publication date when both are provided.
-- Deleting a JobOffer must not automatically delete associated JobApplications.
+- DA JobOffer cannot be deleted while JobApplications reference it.
 - The original JobOffer data should remain independent from changes made to individual JobApplications.
 
 ---
@@ -345,7 +348,7 @@ An Interview is responsible for:
 - An Interview must have a status.
 - An Interview with status `CANCELLED` must not be considered an upcoming interview.
 - An Interview with status `COMPLETED` must not be considered an upcoming interview.
-- Deleting a JobApplication must not automatically delete its Interviews.
+- A JobApplication cannot be deleted while it has Interviews.
 - An Interview cannot be reassigned to a different JobApplication after creation.
 
 ---
@@ -428,7 +431,7 @@ A Task is responsible for:
 - A Task must have a priority.
 - A completed Task must not be considered pending.
 - A cancelled Task must not be considered pending.
-- Deleting a JobApplication must not automatically delete associated Tasks.
+- A JobApplication cannot be deleted while Tasks reference it.
 - A Task may exist independently of any JobApplication.
 
 ---
@@ -537,3 +540,18 @@ Authentication and authorization logic are implemented by the security layer rat
 Passwords are never stored directly. The application must hash passwords using a secure password-hashing mechanism before persistence.
 
 Future versions may introduce additional profile information, preferences, roles, or account-management features without changing the fundamental ownership model.
+
+## 5. Enumerated Values
+
+| Enum | Values |
+|------|--------|
+| ApplicationStatus | `SAVED`, `APPLIED`, `INTERVIEWING`, `OFFER`, `ACCEPTED`, `REJECTED`, `WITHDRAWN` |
+| ApplicationPriority | `LOW`, `MEDIUM`, `HIGH` |
+| InterviewType | `PHONE`, `VIDEO`, `ONSITE`, `OTHER` |
+| InterviewStatus | `SCHEDULED`, `COMPLETED`, `CANCELLED` |
+| TaskStatus | `TODO`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED` |
+| TaskPriority | `LOW`, `MEDIUM`, `HIGH` |
+| WorkMode | To be defined. |
+| EmploymentType | To be defined. |
+
+Values are currently persisted as strings. Allowed status transitions for `ApplicationStatus` will be defined together with the service layer.

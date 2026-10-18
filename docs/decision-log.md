@@ -174,19 +174,21 @@ The domain relationship is effectively:
 
 **Decision**
 
-A job application is distinguished using its associated company, position title, and location context.
+Job applications have no natural key. They are identified exclusively by their UUID, and no uniqueness constraint is applied to company and position title.
 
 **Context**
 
-Two apparently identical offers may represent different opportunities if they correspond to different locations.
+Two applications with the same company and position title may represent different opportunities, for example the same role in different locations.
 
 **Rationale**
 
-Location can materially distinguish employment opportunities.
+Location context is available through the associated JobOffer when one exists. Enforcing a composite natural key would reject valid scenarios.
 
 **Consequences**
 
-The application model must retain sufficient context to distinguish these cases even when other information is identical.
+Duplicate detection, if ever needed, will be a user-facing warning rather than a database constraint.
+
+*Revised on 2026-10-18: the original wording required location context that the JobApplication model does not store.*
 
 ---
 
@@ -259,6 +261,66 @@ Creating dedicated entities for these concepts would introduce unnecessary compl
 `interviewer` and `location` remain free-form values.
 
 They may be modeled more explicitly in a future version if integrations or advanced scheduling functionality require it.
+
+---
+
+## 4.8 Application Status Set
+
+**Decision**
+
+`JobApplication.status` uses: `SAVED`, `APPLIED`, `INTERVIEWING`, `OFFER`, `ACCEPTED`, `REJECTED`, `WITHDRAWN`.
+
+**Context**
+
+The status values were undefined, and the optionality of `appliedAt` depends on them.
+
+**Rationale**
+
+`SAVED` supports tracking opportunities before applying. `WITHDRAWN` and `REJECTED` distinguish who closed the process, which is valuable for future analytics.
+
+**Consequences**
+
+Transition rules are deferred to the service layer phase.
+
+---
+
+## 4.9 Optional appliedAt for Saved Applications
+
+**Decision**
+
+`appliedAt` is a `LocalDate`, required for every status except `SAVED`.
+
+**Context**
+
+An application in `SAVED` status has not been submitted yet.
+
+**Rationale**
+
+Requiring a submission date for unsubmitted applications would force users to enter false data.
+
+**Consequences**
+
+The rule is enforced in the service layer; the database column is nullable.
+
+---
+
+## 4.10 Default Application Priority
+
+**Decision**
+
+`JobApplication.priority` is mandatory in persistence and defaults to `MEDIUM` when the client does not provide it.
+
+**Context**
+
+The data model described priority as optional, while the schema required it.
+
+**Rationale**
+
+A default avoids forcing an irrelevant choice on users while keeping filtering and sorting free of null handling. It is consistent with `Task.priority`.
+
+**Consequences**
+
+The API treats priority as optional; the service layer assigns the default.
 
 ---
 
@@ -349,6 +411,46 @@ Explicit deletion provides greater control over data integrity and makes destruc
 Relationships must be designed so that dependent records prevent deletion when appropriate.
 
 Application code must explicitly handle dependent data rather than relying on broad database cascades.
+
+---
+
+## 5.5 DATE for Calendar Dates
+
+**Decision**
+
+Calendar dates (`appliedAt`, `publishedAt`, `expiresAt`) are stored as `DATE` and mapped to `LocalDate`.
+
+**Context**
+
+These fields were stored as `TIMESTAMP WITH TIME ZONE`.
+
+**Rationale**
+
+They represent calendar days, not instants. Timestamps introduce time-zone conversions that can shift the stored day.
+
+**Consequences**
+
+Instants such as `scheduledAt`, `dueAt` and audit fields remain timestamps with time zone.
+
+---
+
+## 5.6 Explicit Foreign Key Indexes
+
+**Decision**
+
+Every foreign key column is explicitly indexed.
+
+**Context**
+
+PostgreSQL does not automatically index foreign key columns.
+
+**Rationale**
+
+Foreign keys support ownership queries and the restrictive deletion policy, which checks child tables when a parent is deleted.
+
+**Consequences**
+
+Indexes are introduced through a Flyway migration.
 
 ---
 

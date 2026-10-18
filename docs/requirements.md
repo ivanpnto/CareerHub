@@ -60,7 +60,7 @@ Features such as AI assistance, external integrations, document management, anal
 |----|----------|-------------|
 | FR-400 | Must | The system shall allow authenticated users to create, view, update and delete job offers. |
 | FR-401 | Must | Every job offer shall belong to one company. |
-| FR-402 | Must | A job offer shall store relevant information such as title, location, source, salary (optional), publication link and notes. |
+| FR-402 | Must | A job offer shall store relevant information such as title, description, location, work mode, employment type, source URL, and publication and expiration dates. |
 | FR-403 | Should | The system shall allow users to filter job offers. |
 
 ---
@@ -70,7 +70,7 @@ Features such as AI assistance, external integrations, document management, anal
 | ID | Priority | Requirement |
 |----|----------|-------------|
 | FR-500 | Must | The system shall allow authenticated users to create, view, update and delete applications. |
-| FR-501 | Must | Every application shall be associated with one job offer. |
+| FR-501 | Must | Every application shall be associated with one company and may optionally reference one job offer belonging to that company. |
 | FR-502 | Must | Every application shall maintain a current status. |
 | FR-503 | Must | The system shall allow users to change the application status. |
 | FR-504 | Must | Users shall be able to store notes related to each application. |
@@ -136,7 +136,7 @@ Features such as AI assistance, external integrations, document management, anal
 |----|------|
 | BR-001 | Every company belongs to one user. |
 | BR-002 | Every job offer belongs to one company. |
-| BR-003 | Every application belongs to one job offer. |
+| BR-003 | Every application belongs to one company and may optionally reference one job offer of that company. |
 | BR-004 | Every interview belongs to one application. |
 | BR-005 | Tasks may optionally belong to one application. |
 | BR-006 | Applications must always have exactly one status. |
