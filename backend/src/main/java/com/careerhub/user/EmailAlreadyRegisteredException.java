@@ -1,6 +1,8 @@
 package com.careerhub.user;
 
-public class EmailAlreadyRegisteredException extends RuntimeException {
+import com.careerhub.shared.error.ConflictException;
+
+public class EmailAlreadyRegisteredException extends ConflictException {
 
     public EmailAlreadyRegisteredException() {
         super("Email address is already registered.");
