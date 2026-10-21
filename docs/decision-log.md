@@ -96,6 +96,46 @@ Additional mapping code is required, but API stability and maintainability are i
 
 ---
 
+## 3.4 Feature Package Structure
+
+**Decision**
+
+Domain entities live in their feature packages (`user`, `company`, `joboffer`, `jobapplication`, `interview`, `task`). `BaseEntity` lives in `shared.persistence`.
+
+**Context**
+
+Entities were initially placed in a layer-oriented `domain.model` package, contradicting ADR-0002.
+
+**Rationale**
+
+Feature packages keep each capability cohesive and allow package-private visibility to enforce boundaries between features. The resulting dependency graph is acyclic: `user ← company ← joboffer ← jobapplication ← interview / task`.
+
+**Consequences**
+
+Cross-feature access goes through public services rather than repositories.
+
+---
+
+## 3.5 Owner-Scoped Selective Repositories
+
+**Decision**
+
+Repositories extend `Repository<T, UUID>` and declare only the methods they need. Repositories of user-owned entities expose only owner-scoped queries. Repositories are package-private within their feature.
+
+**Context**
+
+`JpaRepository` exposes unscoped operations such as `findAll()` and `findById(id)`.
+
+**Rationale**
+
+Unscoped access methods make insecure direct object references possible through a single mistake. Removing them enforces user isolation (BI-001) by construction.
+
+**Consequences**
+
+Methods must be declared explicitly. Access to another user's resource is indistinguishable from access to a non-existent one and results in a 404 response.
+
+---
+
 # 4. Domain Decisions
 
 ## 4.1 JobApplication as an Independent Entity
@@ -471,6 +511,26 @@ These fields were mapped to `OffsetDateTime`, while the data model specified `In
 **Consequences**
 
 Time-zone conversion for display is the responsibility of the presentation layer.
+
+---
+
+## 5.8 Lazy Loading and Disabled Open Session in View
+
+**Decision**
+
+All `@ManyToOne` relationships use `FetchType.LAZY`, and `spring.jpa.open-in-view` is disabled.
+
+**Context**
+
+JPA defaults `@ManyToOne` to eager loading, and Spring Boot keeps the persistence session open during web rendering by default.
+
+**Rationale**
+
+Eager loading causes unnecessary queries and N+1 problems. Open session in view hides lazy-loading access outside the service layer.
+
+**Consequences**
+
+Services must explicitly load the data each use case requires. Accessing an uninitialized relationship outside a transaction fails with `LazyInitializationException`.
 
 ---
 
