@@ -6,6 +6,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
+import java.util.Locale;
+import java.util.Objects;
+
 @Entity
 @Table(name = "\"user\"")
 public class User extends BaseEntity {
@@ -31,10 +34,15 @@ public class User extends BaseEntity {
             String firstName,
             String lastName
     ) {
-        this.email = email;
+        this.email = normalizeEmail(email);
         this.passwordHash = passwordHash;
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+
+    public static String normalizeEmail(String email) {
+        Objects.requireNonNull(email, "email must not be null");
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 
     public String getEmail() {
