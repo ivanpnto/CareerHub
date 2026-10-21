@@ -73,4 +73,16 @@ class AuthControllerTest {
                 }
                 """.formatted(email, password);
     }
+
+    @Test
+    void shouldRejectPasswordExceedingBcryptByteLimit() throws Exception {
+        // 20 emojis: 40 UTF-16 units (passes @Size) but 80 UTF-8 bytes (over BCrypt's 72)
+        String password = "\uD83D\uDE00".repeat(20);
+
+        mockMvc.perform(post(REGISTER_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerJson("byte.limit.test@example.com", password)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.password").exists());
+    }
 }
