@@ -136,6 +136,66 @@ Methods must be declared explicitly. Access to another user's resource is indist
 
 ---
 
+## 3.6 Stateless Security Foundation
+
+**Decision**
+
+Spring Security is configured as stateless from the first endpoint: no HTTP sessions, CSRF protection, form login or HTTP Basic. `/api/v1/auth/**` and `/error` are public; every other request requires authentication, and unauthenticated requests receive `401 Unauthorized`.
+
+**Context**
+
+CareerHub exposes a REST API consumed by a separate frontend and will use token-based authentication.
+
+**Rationale**
+
+Denying access by default prevents new endpoints from being exposed accidentally. CSRF protection targets cookie-based sessions, which the API does not use. `/error` must remain public so that errors raised by public endpoints are not masked as `401` responses.
+
+**Consequences**
+
+Every new endpoint is protected unless it is explicitly opened. Token-based authentication will be added on top of this configuration.
+
+---
+
+## 3.7 Delegating Password Encoder
+
+**Decision**
+
+Passwords are hashed with Spring Security's `DelegatingPasswordEncoder`, which currently uses BCrypt.
+
+**Context**
+
+Passwords must be stored as secure one-way hashes, and the preferred hashing algorithm may change over the lifetime of the project.
+
+**Rationale**
+
+Stored hashes carry an algorithm prefix (for example `{bcrypt}`), so the algorithm can be replaced later without invalidating existing hashes. BCrypt is deliberately slow and widely supported.
+
+**Consequences**
+
+`password_hash` values include the algorithm prefix. BCrypt only processes the first 72 bytes of a password, which constrains the password policy (see 6.8).
+
+---
+
+## 3.8 Command Objects as Service Input
+
+**Decision**
+
+Services receive command objects defined in their own feature (for example `RegisterUserCommand`) instead of API request DTOs.
+
+**Context**
+
+Request DTOs belong to the HTTP contract and carry web validation annotations.
+
+**Rationale**
+
+Keeping services independent of the API allows them to be reused from other entry points and tested without the web layer. A dedicated type also avoids long lists of positional `String` parameters, where swapped arguments compile silently.
+
+**Consequences**
+
+Controllers map request DTOs to commands. Services may return entities to the web layer, which maps them to response DTOs; ADR-0006 applies at the API boundary. Records that contain secrets override `toString()` so that the secret never reaches logs.
+
+---
+
 # 4. Domain Decisions
 
 ## 4.1 JobApplication as an Independent Entity
@@ -361,6 +421,26 @@ A default avoids forcing an irrelevant choice on users while keeping filtering a
 **Consequences**
 
 The API treats priority as optional; the service layer assigns the default.
+
+---
+
+## 4.11 Case-Insensitive Email Identity
+
+**Decision**
+
+Email addresses are trimmed and converted to lowercase with `Locale.ROOT` before they are stored or looked up (`User.normalizeEmail`).
+
+**Context**
+
+Users often type the same address with different capitalization, while the database unique constraint is case-sensitive.
+
+**Rationale**
+
+Although RFC 5321 allows a case-sensitive local part, mainstream email providers treat addresses case-insensitively. Normalizing prevents duplicate accounts and failed lookups. `Locale.ROOT` avoids locale-dependent case mappings such as the Turkish dotless i.
+
+**Consequences**
+
+Email uniqueness is effectively case-insensitive. A dedicated `EmailAddress` value object is deferred until more behavior justifies it.
 
 ---
 
@@ -643,6 +723,71 @@ Request and response DTOs are part of the API boundary.
 
 ---
 
+## 6.6 Problem Details for Error Responses
+
+**Decision**
+
+Error responses follow RFC 9457 (Problem Details) and are produced by a global `@RestControllerAdvice` that extends `ResponseEntityExceptionHandler`:
+
+- Domain conflicts extend the shared `ConflictException` and map to `409` with the exception message.
+- `DataIntegrityViolationException` maps to `409` with a generic message.
+- Request validation failures map to `400` with an `errors` object of field names and messages.
+- Any other exception maps to `500` with a generic message.
+
+**Context**
+
+Clients need a consistent, machine-readable error format, and error responses must not expose internal details.
+
+**Rationale**
+
+Problem Details is a standard format supported natively by Spring. A semantic base exception in `shared` keeps dependencies pointing from features to `shared`, never the reverse. Database messages contain constraint names and duplicated values, which may be personal data, so they are never returned. Rejected values are never echoed, so a rejected password cannot appear in a response.
+
+**Consequences**
+
+Features can add new exceptions without modifying the global handler. In the rare race between two concurrent registrations with the same email, the losing request receives the generic `409` message. Violations of the restrictive deletion policy will also map to `409`. Validation messages may be localized according to the request locale, so clients must rely on field names rather than message text. Authentication failures (`401`) currently return an empty body.
+
+---
+
+## 6.7 Duplicate Email Registration Response
+
+**Decision**
+
+Registering an email address that already exists returns `409 Conflict` with an explicit message.
+
+**Context**
+
+A registration endpoint must report why a valid request cannot be completed.
+
+**Rationale**
+
+An explicit message gives the user a clear next step. The resulting account enumeration risk is accepted: registration inherently reveals whether an address is in use, and mitigations such as rate limiting or email verification are deferred.
+
+**Consequences**
+
+The service checks for an existing email before hashing the password, to avoid unnecessary hashing work. The database unique constraint remains the final guarantee; `saveAndFlush` ensures that a violation surfaces inside the service transaction.
+
+---
+
+## 6.8 Password Length Policy
+
+**Decision**
+
+Passwords must contain between 8 and 64 characters and must not exceed 72 bytes when encoded as UTF-8.
+
+**Context**
+
+BCrypt only processes the first 72 bytes of a password, and Spring Security rejects longer input with an exception. `@Size` counts UTF-16 code units, not bytes, so a 64-character limit alone does not guarantee 72 bytes for multibyte characters.
+
+**Rationale**
+
+The character limit is the user-facing rule. The byte limit, implemented by the reusable `@Utf8ByteSize` constraint, rejects multibyte input that would otherwise cause a `500` response. Pre-hashing the password before BCrypt was rejected because it is a non-standard construction.
+
+**Consequences**
+
+Both limits are enforced at the API boundary and return `400` with a field error on `password`.
+
+---
+
 # 7. Development Decisions
 
 ## 7.1 Incremental Development
@@ -783,6 +928,16 @@ Potential AI capabilities will be evaluated after the core CareerHub workflow ha
 Calendar providers, video-conferencing services, notifications, and other external integrations are outside the initial MVP scope.
 
 They may be introduced in future versions if they provide sufficient value.
+
+---
+
+## 8.7 Argon2 Password Hashing
+
+**Status:** Deferred
+
+Argon2 has no 72-byte input limit and is recommended by current password-storage guidance, but it requires an additional cryptography dependency (BouncyCastle).
+
+`DelegatingPasswordEncoder` allows a future migration without invalidating existing BCrypt hashes.
 
 ---
 
