@@ -7,7 +7,7 @@ import org.springframework.data.repository.Repository;
 
 interface UserRepository extends Repository<User, UUID> {
 
-    <S extends User> S save(S user);
+    <S extends User> S saveAndFlush(S user);
 
     Optional<User> findByEmail(String email);
 
