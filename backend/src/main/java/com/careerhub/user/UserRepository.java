@@ -1,0 +1,15 @@
+package com.careerhub.user;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.repository.Repository;
+
+interface UserRepository extends Repository<User, UUID> {
+
+    <S extends User> S save(S user);
+
+    Optional<User> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+}
