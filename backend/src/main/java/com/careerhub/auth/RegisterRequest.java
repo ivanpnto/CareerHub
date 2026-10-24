@@ -9,13 +9,10 @@ import jakarta.validation.constraints.Size;
 public record RegisterRequest(
         @NotBlank @Email @Size(max = 255) String email,
         @NotBlank @Size(min = 8, max = 64)
-        @Utf8ByteSize(max = BCRYPT_MAX_PASSWORD_BYTES) String password,
+        @Utf8ByteSize(max = PasswordLimits.BCRYPT_MAX_BYTES) String password,
         @NotBlank @Size(max = 100) String firstName,
         @NotBlank @Size(max = 100) String lastName
 ) {
-
-    // BCrypt only processes the first 72 bytes; Spring Security rejects longer input
-    private static final int BCRYPT_MAX_PASSWORD_BYTES = 72;
 
     RegisterUserCommand toCommand() {
         return new RegisterUserCommand(email, password, firstName, lastName);
