@@ -19,10 +19,16 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.MediaType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.startsWith;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -98,5 +104,27 @@ class JwtAuthenticationTest {
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
 
         return encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
+    }
+
+    @Test
+    void shouldReturnProblemDetailWithBearerChallengeWhenTokenIsMissing() throws Exception {
+        mockMvc.perform(get(PROTECTED_URL))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Authentication failed."))
+                .andExpect(header().string("WWW-Authenticate", startsWith("Bearer")));
+    }
+
+    @Test
+    void shouldReturnProblemDetailWithInvalidTokenChallengeWhenTokenIsExpired() throws Exception {
+        Instant now = Instant.now();
+        String token = encode(jwtEncoder, "careerhub",
+                now.minus(30, ChronoUnit.MINUTES), now.minus(10, ChronoUnit.MINUTES));
+
+        mockMvc.perform(get(PROTECTED_URL).header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Authentication failed."))
+                .andExpect(header().string("WWW-Authenticate", containsString("invalid_token")));
     }
 }
