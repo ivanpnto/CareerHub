@@ -13,10 +13,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.security.config.Customizer;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.web.servlet.HandlerExceptionResolver;
-
 @Configuration
 public class SecurityConfig {
 

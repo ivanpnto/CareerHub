@@ -8,9 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.test.web.servlet.MvcResult;
 
-import com.careerhub.shared.security.JwtProperties;
 import com.careerhub.shared.security.JwtProperties;
 import com.jayway.jsonpath.JsonPath;
 
