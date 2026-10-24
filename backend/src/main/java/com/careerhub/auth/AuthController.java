@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 class AuthController {
 
     private final UserRegistrationService userRegistrationService;
+    private final LoginService loginService;
 
-    AuthController(UserRegistrationService userRegistrationService) {
+    AuthController(UserRegistrationService userRegistrationService, LoginService loginService) {
         this.userRegistrationService = userRegistrationService;
+        this.loginService = loginService;
     }
 
     @PostMapping("/register")
@@ -25,5 +27,11 @@ class AuthController {
     RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
         User user = userRegistrationService.register(request.toCommand());
         return RegisterResponse.from(user);
+    }
+
+    @PostMapping("/login")
+    LoginResponse login(@Valid @RequestBody LoginRequest request) {
+        AccessToken token = loginService.login(request.email(), request.password());
+        return LoginResponse.from(token);
     }
 }
