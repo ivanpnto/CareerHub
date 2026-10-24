@@ -15,3 +15,10 @@ spring:
     url: ${DB_URL}
     user: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
+careerhub:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      issuer: careerhub
+      access-token-ttl: 15m
