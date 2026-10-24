@@ -118,7 +118,74 @@ No `Location` header is returned, because no endpoint exposes users by identifie
 | `400 Bad Request` | The body is malformed or fails validation. |
 | `409 Conflict` | The email address is already registered. |
 
-The remaining authentication endpoints will be documented as they are implemented.
+### 5.2 Login
+
+    POST /api/v1/auth/login
+
+Authenticates a user and returns an access token.
+
+This endpoint is public.
+
+#### Request
+
+```json
+{
+  "email": "ivan@example.com",
+  "password": "securePassword"
+}
+```
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| email | string | Yes | Maximum 255 characters. Matched case-insensitively. |
+| password | string | Yes | Must not exceed 72 bytes when encoded as UTF-8. |
+
+The registration password policy is not applied, so existing users can still log in if the policy changes.
+
+#### Response — `200 OK`
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 900
+}
+```
+
+`expiresIn` is the token lifetime in seconds.
+
+#### Errors
+
+| Status | Condition |
+|--------|-----------|
+| `400 Bad Request` | The body is malformed or fails validation. |
+| `401 Unauthorized` | The email or the password is incorrect. |
+
+Unknown emails and wrong passwords return the same response:
+
+```json
+{
+  "title": "Unauthorized",
+  "status": 401,
+  "detail": "Invalid email or password."
+}
+```
+
+### 5.3 Authenticated Requests
+
+Protected endpoints require the access token in the `Authorization` header:
+
+    Authorization: Bearer <accessToken>
+
+The token is a signed JWT. Its payload can be decoded by anyone, so it never contains sensitive data.
+
+When the token is missing, malformed, expired or otherwise invalid, the API returns `401 Unauthorized` with a Problem Details body and a `WWW-Authenticate: Bearer` header. For invalid tokens, the header includes `error="invalid_token"`.
+
+### 5.4 Logout
+
+There is no logout endpoint. Clients log out by discarding the access token.
+
+An access token cannot be revoked and remains valid until it expires.
 
 ---
 
@@ -155,7 +222,7 @@ Rejected values are never included in the response.
 | Status | Meaning |
 |--------|---------|
 | `400 Bad Request` | The request is malformed or fails validation. |
-| `401 Unauthorized` | Authentication is required. This response currently has an empty body. |
+| `401 Unauthorized` | Authentication is missing, invalid or has failed. |
 | `404 Not Found` | The resource does not exist or belongs to another user. |
 | `409 Conflict` | The request conflicts with existing data. |
 | `500 Internal Server Error` | An unexpected error occurred. Internal details are never exposed. |

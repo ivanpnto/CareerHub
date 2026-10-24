@@ -152,7 +152,7 @@ Denying access by default prevents new endpoints from being exposed accidentally
 
 **Consequences**
 
-Every new endpoint is protected unless it is explicitly opened. Token-based authentication will be added on top of this configuration.
+Every new endpoint is protected unless it is explicitly opened. Protected requests are authenticated with JWT access tokens through Spring Security's OAuth2 resource server support (see 6.9).
 
 ---
 
@@ -732,6 +732,7 @@ Error responses follow RFC 9457 (Problem Details) and are produced by a global `
 - Domain conflicts extend the shared `ConflictException` and map to `409` with the exception message.
 - `DataIntegrityViolationException` maps to `409` with a generic message.
 - Request validation failures map to `400` with an `errors` object of field names and messages.
+- Authentication failures map to `401` with a generic message.
 - Any other exception maps to `500` with a generic message.
 
 **Context**
@@ -744,7 +745,9 @@ Problem Details is a standard format supported natively by Spring. A semantic ba
 
 **Consequences**
 
-Features can add new exceptions without modifying the global handler. In the rare race between two concurrent registrations with the same email, the losing request receives the generic `409` message. Violations of the restrictive deletion policy will also map to `409`. Validation messages may be localized according to the request locale, so clients must rely on field names rather than message text. Authentication failures (`401`) currently return an empty body.
+Features can add new exceptions without modifying the global handler. In the rare race between two concurrent registrations with the same email, the losing request receives the generic `409` message. Violations of the restrictive deletion policy will also map to `409`. Validation messages may be localized according to the request locale, so clients must rely on field names rather than message text.
+
+Authentication failures raised by the security filter chain do not reach Spring MVC. A custom `AuthenticationEntryPoint` first delegates to `BearerTokenAuthenticationEntryPoint`, which sets the `WWW-Authenticate` header, and then forwards the exception to Spring MVC's `HandlerExceptionResolver`. As a result, every `401` response body is produced by the global handler, and the error format is defined in a single place. Failed login attempts return `401` without a `WWW-Authenticate` header, because no authentication scheme applies to the endpoint that issues tokens.
 
 ---
 
@@ -785,6 +788,72 @@ The character limit is the user-facing rule. The byte limit, implemented by the 
 **Consequences**
 
 Both limits are enforced at the API boundary and return `400` with a field error on `password`.
+
+---
+
+## 6.9 JWT Access Tokens
+
+**Decision**
+
+Protected requests are authenticated with signed JWT access tokens sent in the `Authorization: Bearer` header:
+
+- Validation uses Spring Security's OAuth2 resource server support instead of a custom filter.
+- Tokens are signed with HS256 using a Base64-encoded secret of at least 256 bits, provided through the `JWT_SECRET` environment variable.
+- The decoder accepts only HS256 and validates the expiration and the issuer (`careerhub`).
+- Tokens contain only `iss`, `sub` (the user identifier), `iat` and `exp`.
+- The token lifetime is configurable and defaults to 15 minutes.
+
+**Context**
+
+CareerHub follows a stateless authentication model (3.6) and a single backend both issues and validates tokens.
+
+**Rationale**
+
+Signed tokens are validated without a database lookup. Framework support avoids hand-written security code. A symmetric key is sufficient because no other service validates tokens. Pinning the algorithm prevents algorithm confusion attacks. The user identifier is used as subject because it never changes and is required by owner-scoped queries (3.5). JWTs are signed, not encrypted, so they never contain sensitive data.
+
+**Consequences**
+
+The application fails to start when the secret is missing, not Base64-encoded or shorter than 256 bits. Tokens cannot be revoked before they expire; rotating `JWT_SECRET` invalidates every issued token at once. Changing the configured lifetime only affects tokens issued afterwards.
+
+---
+
+## 6.10 Login with Generic Credential Errors
+
+**Decision**
+
+`POST /api/v1/auth/login` authenticates email and password and returns an access token. Unknown emails and wrong passwords both return `401` with the same message.
+
+**Context**
+
+The login endpoint is the main target of credential-guessing attacks.
+
+**Rationale**
+
+Identical responses avoid confirming which accounts exist. Authentication uses Spring Security's `DaoAuthenticationProvider`, which also runs a dummy password check for unknown users so that response times do not reveal whether an account exists. The provider is private to the login service rather than a global `AuthenticationManager` bean, so it does not become part of the JWT filter chain. The login request does not apply the registration password policy, so stricter future rules do not lock out existing users; it only enforces the 72-byte BCrypt limit.
+
+**Consequences**
+
+The registration endpoint still reveals whether an email is registered (6.7). The `user` feature exposes `UserLookupService` and remains independent of Spring Security; the `auth` package adapts it to `UserDetailsService`.
+
+---
+
+## 6.11 Client-Side Logout
+
+**Decision**
+
+Logging out consists of the client discarding its access token. The API exposes no logout endpoint.
+
+**Context**
+
+FR-103 requires users to be able to log out, while access tokens are stateless and cannot be revoked.
+
+**Rationale**
+
+A logout endpoint that does not invalidate the token would suggest a guarantee the server cannot provide.
+
+**Consequences**
+
+A copied token remains valid until it expires. Server-side revocation will be possible once refresh tokens are introduced (8.8).
 
 ---
 
@@ -938,6 +1007,28 @@ They may be introduced in future versions if they provide sufficient value.
 Argon2 has no 72-byte input limit and is recommended by current password-storage guidance, but it requires an additional cryptography dependency (BouncyCastle).
 
 `DelegatingPasswordEncoder` allows a future migration without invalidating existing BCrypt hashes.
+
+---
+
+## 8.8 Refresh Tokens
+
+**Status:** Deferred
+
+The MVP issues short-lived access tokens only. Without refresh tokens, users must log in again when their access token expires, which is acceptable while the API is consumed manually but not for daily use.
+
+Refresh tokens require persistence, rotation and revocation. Adding them does not change the `Authorization: Bearer` contract for protected requests.
+
+This decision will be revisited at the start of Phase 4 (Frontend Foundation).
+
+---
+
+## 8.9 Login Rate Limiting
+
+**Status:** Deferred
+
+The login endpoint does not limit the number of attempts. BCrypt slows down each attempt but does not prevent credential guessing.
+
+Rate limiting should be introduced before the application is exposed publicly.
 
 ---
 
