@@ -42,6 +42,14 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void shouldMapNotFoundExceptionToNotFoundProblem() throws Exception {
+        mockMvc.perform(get("/test/not-found"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("Test resource not found."));
+    }
+
+    @Test
     void shouldMapDataIntegrityViolationWithoutLeakingDatabaseDetails() throws Exception {
         mockMvc.perform(get("/test/integrity"))
                 .andExpect(status().isConflict())
@@ -76,6 +84,11 @@ class GlobalExceptionHandlerTest {
             throw new TestConflictException();
         }
 
+        @GetMapping("/test/not-found")
+        void notFound() {
+            throw new TestNotFoundException();
+        }
+
         @GetMapping("/test/integrity")
         void integrity() {
             throw new DataIntegrityViolationException(
@@ -96,6 +109,13 @@ class GlobalExceptionHandlerTest {
 
         TestConflictException() {
             super("Test conflict.");
+        }
+    }
+
+    static class TestNotFoundException extends NotFoundException {
+
+        TestNotFoundException() {
+            super("Test resource not found.");
         }
     }
 

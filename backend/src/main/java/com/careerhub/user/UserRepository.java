@@ -12,4 +12,6 @@ interface UserRepository extends Repository<User, UUID> {
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    User getReferenceById(UUID id);
 }

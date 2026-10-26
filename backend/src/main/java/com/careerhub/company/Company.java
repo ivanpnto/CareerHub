@@ -1,14 +1,16 @@
 package com.careerhub.company;
 
+import java.util.Objects;
+
 import com.careerhub.shared.persistence.BaseEntity;
 import com.careerhub.user.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.FetchType;
 
 @Entity
 @Table(name = "company")
@@ -44,12 +46,18 @@ public class Company extends BaseEntity {
             String notes,
             User user
     ) {
-        this.name = name;
-        this.website = website;
-        this.industry = industry;
-        this.headquarters = headquarters;
-        this.notes = notes;
-        this.user = user;
+        this.user = Objects.requireNonNull(user, "user must not be null");
+        apply(name, website, industry, headquarters, notes);
+    }
+
+    public void update(
+            String name,
+            String website,
+            String industry,
+            String headquarters,
+            String notes
+    ) {
+        apply(name, website, industry, headquarters, notes);
     }
 
     public String getName() {
@@ -74,5 +82,35 @@ public class Company extends BaseEntity {
 
     public User getUser() {
         return user;
+    }
+
+    private void apply(
+            String name,
+            String website,
+            String industry,
+            String headquarters,
+            String notes
+    ) {
+        this.name = requireText(name, "name");
+        this.website = stripToNull(website);
+        this.industry = stripToNull(industry);
+        this.headquarters = stripToNull(headquarters);
+        this.notes = stripToNull(notes);
+    }
+
+    private static String requireText(String value, String field) {
+        String stripped = stripToNull(value);
+        if (stripped == null) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
+        return stripped;
+    }
+
+    private static String stripToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String stripped = value.strip();
+        return stripped.isEmpty() ? null : stripped;
     }
 }
